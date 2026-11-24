@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![VirusTotal](https://shields.io)](https://www.virustotal.com/gui/file/0a7111b0d67eda183a90a4e36ac26a0ccc05663d1ee86988ba2e89e599e667b0)
+[![VirusTotal](https://shields.io)](https://www.virustotal.com/gui/file/35f576b23fb2d53199602a65115165527130665abf5bb8a95331e410098a103b?nocache=1)
 
 # Minecraft Dungeons II — Bản Việt hoá cộng đồng
 
