@@ -1,0 +1,48 @@
+# ===== Build output / binaries =====
+launcher/dist/
+launcher/build/
+launcher/*.spec
+*.exe
+*.dll
+*.pak
+*.ucas
+*.utoc
+*.ufont
+
+# ===== Runtime / downloaded assets =====
+launcher/assets/WebView2RuntimeInstallerX64.exe
+launcher/assets/bg.mp4
+launcher/assets/*.ttf
+launcher/assets/*.otf
+launcher/assets/font_paths.txt
+
+# ===== Game assets extracted from a legally owned copy =====
+localization/extracted/
+localization/latin_fonts.txt
+
+# ===== Mod source staging / repack output =====
+mod/
+mod_files/
+_stage/
+_fontbuild/
+_fontbuild.pak
+*.pak
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ===== Local config (chứa đường dẫn máy cá nhân) =====
+launcher_config.json
+config.json
+
+# ===== Logs / OS =====
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
+
+localization

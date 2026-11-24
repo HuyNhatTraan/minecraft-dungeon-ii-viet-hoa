@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>MCD2 VH Launcher</title>
+<style>
+  @font-face { font-family: "JBM"; src: url("assets/font.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "JBM"; src: url("assets/font-bold.ttf") format("truetype"); font-weight: 700 900; font-display: swap; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --purple: #6d4aff;
+    --purple2: #8a6bff;
+    --navy: #0b1020;
+    --panel: rgba(11, 16, 34, .82);
+    --line: rgba(255,255,255,.10);
+    --text: #eef1ff;
+    --muted: #a4aecb;
+  }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: var(--navy); }
+  body {
+    font-family: "JBM", "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    user-select: none;
+  }
+  #bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover;
+        pointer-events: none; transform: scale(1.06); filter: brightness(.63) saturate(1.05); }
+  #veil { position: fixed; inset: 0; pointer-events: none;
+          background: linear-gradient(90deg, rgba(6,9,20,.94) 0%, rgba(6,9,20,.72) 22%, rgba(6,9,20,.24) 55%, rgba(6,9,20,.56) 100%),
+                      linear-gradient(0deg, rgba(6,9,20,.68), transparent 48%); }
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  html, .view { scrollbar-width: none; -ms-overflow-style: none; }
+  .shell { position: relative; display: flex; height: 100%; min-width: 0; }
+  .main { min-width: 0; }
+  .view { overflow-x: hidden; }
+
+  @media (max-width: 1200px) {
+    .sidebar { width: 210px; }
+    .view { padding-left: 24px; padding-right: 24px; }
+    h1, .fontwrap h2 { font-size: 30px; }
+    .panel { width: min(440px, 100%); }
+    .news-panel { width: min(360px, 100%); }
+    .fontwrap { padding: 22px 24px 26px; }
+  }
+  @media (max-width: 980px) {
+    .sidebar { width: 178px; padding-left: 10px; padding-right: 10px; }
+    .brand .line2 { font-size: 16px; }
+    .brand .line1 { font-size: 13px; }
+    .logo { width: 36px; height: 36px; }
+    .view { padding: 0 16px 20px; }
+    .grid2 { grid-template-columns: 1fr; }
+    .card { padding: 16px; }
+    .bottom-row { flex-direction: column; align-items: stretch; }
+    .panel, .news-panel { width: 100%; }
+    .row { flex-wrap: wrap; }
+  }
+  @media (max-width: 760px) {
+    .sidebar { width: 62px; padding: 20px 8px; }
+    .brand, .game-chip, .news, .mini, .volume, .footver { display: none; }
+    .nav button { justify-content: center; font-size: 0; padding: 12px; }
+    .nav .ico { font-size: 14px; }
+  }
+
+  /* ---------- sidebar ---------- */
+  .sidebar { width: 252px; flex: none; display: flex; flex-direction: column; position: relative;
+             background: linear-gradient(180deg, rgba(17,22,48,.96), rgba(8,12,27,.92));
+             backdrop-filter: blur(18px); border-right: 1px solid var(--line);
+             padding: 26px 16px 18px; overflow: hidden; }
+  .sidebar::before { content:""; position:absolute; top:-90px; left:-60px; width:260px; height:260px;
+             background: radial-gradient(circle, rgba(109,74,255,.28), transparent 70%); pointer-events:none; }
+  .sidebar::after { content:""; position:absolute; top:0; left:0; right:0; height:3px;
+             background: linear-gradient(90deg, #ffc23d, var(--purple), transparent); }
+  .brand { padding: 0 10px 18px; }
+  .brandrow { display:flex; align-items:center; gap:10px; }
+  .logo { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; flex: none;
+          border: 1px solid rgba(255,255,255,.18); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+  .brand .line1 { font-size: 15px; font-weight: 800; letter-spacing: .5px; }
+  .brand .line2 { font-size: 19px; font-weight: 900; color: #ffc23d; letter-spacing: -.5px; line-height: 1.05; }
+  .brand .sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .game-chip { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.06);
+               border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 16px; }
+  .avatar { width: 38px; height: 38px; border-radius: 10px; flex: none; object-fit: cover;
+            border: 1px solid rgba(255,255,255,.15); }
+  .game-chip b { font-size: 13px; display: block; }
+  .game-chip span { font-size: 11px; color: var(--muted); }
+  .nav { display: flex; flex-direction: column; gap: 6px; }
+  .nav button { position:relative; border: 1px solid transparent; background: transparent; color: #cfd6f2;
+                text-align: left; padding: 12px 14px; border-radius: 11px; cursor: pointer;
+                font-size: 14px; display:flex; align-items:center; gap:12px; transition: .18s; }
+  .nav button:hover { background: rgba(255,255,255,.06); transform: translateX(2px); }
+  .nav button.active { border-color: rgba(109,74,255,.55); background: linear-gradient(90deg, rgba(109,74,255,.30), rgba(109,74,255,.10)); color: #fff; }
+  .nav button.active::before { content:""; position:absolute; left:-16px; top:8px; bottom:8px; width:3px;
+                background: var(--purple2); border-radius:99px; }
+  .nav .ico { width: 22px; height:22px; display:grid; place-items:center; text-align:center;
+              border-radius:6px; background:rgba(255,255,255,.07); font-size:12px; opacity:.95; }
+  .nav button.active .ico { background: var(--purple); }
+  .spacer { flex: 1; }
+  .mini { border:1px solid var(--line); background:rgba(255,255,255,.04); border-radius:12px;
+          padding:12px 14px; margin-bottom:12px; }
+  .mini .r { display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--muted); margin:5px 0; }
+  .mini .r b { color:#dfe5ff; font-weight:600; }
+  .footver { text-align:center; font-size:10px; color:#6f7a9c; padding-top:12px; }
+  .volume { display:flex; align-items:center; gap:8px; padding: 14px 8px 0; color: var(--muted); font-size:12px; }
+  .volume input { flex:1; accent-color: var(--purple); }
+
+  /* ---------- main ---------- */
+  .main { flex: 1; position: relative; display: flex; flex-direction: column; }
+  .topbar { display:flex; justify-content:flex-end; gap:10px; padding: 18px 22px; }
+  .ghost { background: rgba(8,12,27,.7); border: 1px solid var(--line); color: var(--text);
+           border-radius: 999px; padding: 9px 15px; font-size: 12px; cursor: pointer; }
+  .ghost:hover { border-color: var(--purple2); }
+  .view { flex:1; padding: 0 42px 28px; display: none; flex-direction: column; overflow: auto; }
+  .view.active { display: flex; }
+  h1 { font-size: 40px; font-weight: 900; letter-spacing: -.5px; }
+  .lead { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+          backdrop-filter: blur(14px); padding: 22px; margin-top: 24px; }
+  .card h3 { font-size: 15px; margin-bottom: 14px; }
+  .row { display:flex; gap:10px; align-items:center; }
+  input[type=text] { flex:1; background: rgba(4,8,20,.8); border: 1px solid var(--line);
+                     border-radius: 10px; color: var(--text); padding: 12px 14px; font-size: 13px;
+                     outline: none; }
+  input[type=text]:focus { border-color: var(--purple2); }
+  .btn { border:0; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 700;
+         cursor: pointer; color: #fff; background: #27304e; transition: .18s; }
+  .btn:hover { filter: brightness(1.2); }
+  .btn.primary { background: var(--purple); }
+  .btn.green { background: #1f9d6b; }
+  .chips { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .chip { background: rgba(255,255,255,.07); border:1px solid var(--line); border-radius:999px;
+          padding: 8px 14px; font-size: 12px; color:#cfd6f2; }
+  .chip.ok { color:#7ee2a8; border-color: rgba(126,226,168,.4); }
+  .chip.bad { color:#ff9a9a; border-color: rgba(255,154,154,.4); }
+  .log { margin-top: 18px; background: rgba(4,8,20,.72); border:1px solid var(--line);
+         border-radius: 12px; padding: 14px; font-family: Consolas, monospace; font-size: 12px;
+         color: #b9e6c9; min-height: 92px; white-space: pre-wrap; overflow:auto; }
+  .bottom-row { margin-top: auto; display:flex; justify-content:space-between; align-items:flex-end; gap:18px; }
+  .news-panel { width: 360px; }
+  .news-head { font-size:20px; font-weight:800; margin:12px 0 6px; }
+  .news-panel p { font-size:12px; line-height:1.65; color:#c9d1ea; margin:8px 0 14px; }
+  .news-tags { display:flex; gap:8px; margin-bottom:12px; }
+  .news-tags span { font-size:10px; padding:5px 9px; border-radius:999px;
+                    background:rgba(109,74,255,.18); border:1px solid rgba(109,74,255,.4); color:#cfc4ff; }
+  .panel { width: 440px; background: rgba(8,12,27,.88); border:1px solid var(--line);
+           border-radius: 18px; padding: 20px; backdrop-filter: blur(16px); }
+  .panel .label { font-size: 11px; color: var(--muted); display:flex; justify-content:space-between; }
+  .counter { display:flex; gap:12px; margin: 10px 0 16px; }
+  .counter div { flex:1; background: rgba(255,255,255,.05); border-radius:10px; padding:10px; text-align:center; }
+  .counter b { display:block; font-size:26px; font-weight:800; }
+  .counter span { font-size:10px; color:var(--muted); }
+  .toggles { display:flex; gap:10px; margin-bottom:16px; }
+  .toggle { flex:1; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05);
+            border-radius:10px; padding:10px 12px; font-size:11px; color:#cfd6f2; }
+  .dot { width:30px; height:17px; border-radius:999px; background:#3a4260; position:relative; flex:none; }
+  .dot::after { content:""; position:absolute; top:3px; left:3px; width:11px; height:11px; border-radius:50%; background:#fff; }
+  .dot.on { background: var(--purple); }
+  .dot.on::after { left:16px; }
+  .play { width:100%; border:0; border-radius:999px; background: var(--purple); color:#fff;
+          font-size:16px; font-weight:800; padding:16px 22px; cursor:pointer; display:flex;
+          justify-content:space-between; align-items:center; }
+  .play:hover { background: var(--purple2); }
+  .foot { text-align:right; font-size:10px; color:var(--muted); margin-top:10px; }
+
+  /* font view */
+  .fontwrap { max-width: 1000px; margin: 8px auto 0; width: 100%;
+              background: rgba(9,13,29,.86); border: 1px solid var(--line);
+              border-radius: 18px; padding: 30px 36px 34px; backdrop-filter: blur(16px); }
+  .fontwrap h2 { font-size:34px; font-weight:900; }
+  .fontgroup { border-top:1px solid var(--line); margin-top:22px; padding-top:22px; }
+  .fontgroup label { display:block; font-size:14px; font-weight:700; margin-bottom:10px; }
+  .fontrow { background: rgba(4,8,20,.75); border:1px solid var(--line); border-radius:12px;
+             padding:14px 16px; display:flex; align-items:center; justify-content:space-between; }
+  .fontrow b { font-family: Consolas, monospace; font-size:15px; }
+  .hint { font-size:11px; color:var(--muted); margin-top:8px; }
+  .bigbtn { width:100%; border:0; border-radius:999px; background:var(--purple); color:#fff;
+            font-weight:800; font-size:15px; padding:16px; margin-top:30px; cursor:pointer; }
+  .bigbtn:hover { background:var(--purple2); }
+  .donate { position:relative; width:320px; max-width:100%; border-radius:14px; overflow:hidden;
+            border:1px solid var(--line); background:#fff; }
+  .donate img { display:block; width:100%; filter: blur(22px) brightness(.35); transition: filter .35s; }
+  .donate.revealed img { filter: none; }
+  .donateCover { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+                 justify-content:center; gap:10px; cursor:pointer; text-align:center;
+                 background:rgba(8,12,27,.62); color:#fff; padding:16px; }
+  .donateCover .big { font-size:40px; }
+  .donateCover b { font-size:15px; }
+  .donateCover small { font-size:11px; color:var(--muted); }
+  .donate.revealed .donateCover { display:none; }
+  .warn { background: rgba(255,170,60,.13); border:1px solid rgba(255,170,60,.45);
+          color:#ffd39a; border-radius:10px; padding:12px 14px; font-size:12px; margin:16px 0 4px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; margin-top:18px; }
+  .grid2 label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+  select { width:100%; background:rgba(4,8,20,.85); border:1px solid var(--line); color:var(--text);
+           border-radius:9px; padding:10px 12px; font-family:inherit; font-size:13px; outline:none; }
+  select:focus { border-color:var(--purple2); }
+
+  /* welcome modal */
+  #welcome { position:fixed; inset:0; background:rgba(4,7,18,.62); display:none;
+             align-items:center; justify-content:center; z-index:20; backdrop-filter:blur(6px); }
+  #welcome.show { display:flex; }
+  .modal { width:560px; background:rgba(9,13,29,.97); border:1px solid var(--line);
+           border-radius:18px; padding:30px; box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .modal .step { text-align:right; color:var(--muted); font-size:12px; }
+  .modal h2 { font-size:25px; margin:12px 0 14px; }
+  .modal p { color:#c9d1ea; line-height:1.65; font-size:14px; min-height:72px; }
+  .bars { display:flex; gap:6px; margin:22px 0; }
+  .bars i { flex:1; height:4px; border-radius:99px; background:#29304d; }
+  .bars i.on { background:var(--purple); }
+  .modal .actions { display:flex; justify-content:space-between; align-items:center; }
+  .link { background:none; border:0; color:var(--muted); cursor:pointer; font-size:13px; }
+  .toast { position:fixed; right:26px; top:70px; z-index:30; background:rgba(9,13,29,.96);
+           border:1px solid var(--line); border-left:3px solid var(--purple); border-radius:10px;
+           padding:14px 18px; font-size:13px; max-width:400px; opacity:0; transform:translateY(-10px);
+           transition:.25s; pointer-events:none; }
+  .toast.show { opacity:1; transform:none; }
+</style>
+</head>
+<body>
+<video id="bg" autoplay muted loop playsinline preload="auto">
+  <source src="assets/bg.mp4" type="video/mp4">
+</video>
+<div id="veil"></div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brandrow">
+        <img class="logo" src="assets/logo.jpg" alt="logo">
+        <div><div class="line1">MINECRAFT</div><div class="line2">DUNGEONS II</div></div>
+      </div>
+      <div class="sub">VH Launcher</div>
+    </div>
+    <div class="game-chip">
+      <img class="avatar" src="assets/logo.jpg" alt="">
+      <div><b>Minecraft Dungeons II</b><span id="sideStatus">VH Launcher</span></div>
+    </div>
+    <nav class="nav">
+      <button class="active" data-tab="home"><span class="ico">▦</span> Trang chủ</button>
+      <button data-tab="font"><span class="ico">T</span> Font tuỳ chỉnh</button>
+      <button data-tab="graphics"><span class="ico">⚙</span> Đồ hoạ</button>
+      <button data-tab="about"><span class="ico">ⓘ</span> Thông tin</button>
+    </nav>
+    <div class="spacer"></div>
+    <div class="mini">
+      <div class="r"><span>TIẾNG VIỆT</span><b id="miniMod">—</b></div>
+      <div class="r"><span>FONT</span><b id="miniFont">Gốc</b></div>
+    </div>
+    <div class="volume">
+      <button id="muteBtn" title="Bật/tắt tiếng" style="background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;padding:0 4px;">🔇</button>
+      <input id="vol" type="range" min="0" max="100" value="10">
+      <span id="volVal" style="width:28px;text-align:right;">10</span>
+    </div>
+    <div class="footver">VH Launcher v1.0.0<br><span style="color:#a794ff">Made by HuyNhatTran via Discord &lt;3</span></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="ghost" id="gameFiles">▣ Game files</button>
+      <button class="ghost" id="help">?</button>
+    </div>
+
+    <section class="view active" id="view-home">
+      <h1>Minecraft Dungeons II Việt Hoá</h1>
+      <div class="lead">Cài tiếng Việt cho Minecraft Dungeons II — không đụng vào archive gốc.</div>
+      <div class="card">
+        <h3>Đường dẫn game</h3>
+        <div class="row">
+          <input type="text" id="gamePath" placeholder="Chọn thư mục cài game...">
+          <button class="btn" id="browseGame">Duyệt...</button>
+          <button class="btn" id="applyPath">Áp dụng</button>
+        </div>
+        <div class="chips">
+          <span class="chip" id="chipGame">Game: ?</span>
+          <span class="chip" id="chipMod">Mod: ?</span>
+          <span class="chip" id="chipFont">Font: gốc</span>
+        </div>
+        <div class="log" id="log">Sẵn sàng. Chọn đường dẫn game rồi bấm "Cài Việt hoá".</div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn primary" id="installMod">Cài Việt hoá</button>
+          <button class="btn" id="removeMod">Gỡ Việt hoá</button>
+        </div>
+      </div>
+
+      <div class="bottom-row">
+        <div class="panel news-panel">
+          <div class="label"><span>THÔNG BÁO</span><span>v1.0.0 · 24/11/2026</span></div>
+          <div class="news-head">Bản Việt hoá 1.0.0</div>
+          <p>Bản Việt hoá: menu, nhiệm vụ, vật phẩm, phù phép.<br>Font tuỳ chỉnh TTF/OTF.<br>Không đụng vào file gốc của game.</p>
+          <div class="news-tags"><span>VIỆT HOÁ</span><span>FONT</span><span>ĐỒ HOẠ</span></div>
+          <div class="foot">Made by HuyNhatTran via Discord &lt;3</div>
+        </div>
+        <div class="panel">
+          <div class="label"><span>NEXT UPDATE</span><span>VERSION 1.0</span></div>
+          <div class="counter">
+            <div><b>00</b><span>NGÀY</span></div><div><b>00</b><span>GIỜ</span></div>
+            <div><b>00</b><span>PHÚT</span></div><div><b>00</b><span>GIÂY</span></div>
+          </div>
+          <div class="toggles">
+            <div class="toggle"><span class="dot on"></span> Tiếng Việt</div>
+            <div class="toggle"><span class="dot on"></span> Font custom</div>
+          </div>
+          <button class="play" id="playBtn">Play Now <span>→</span></button>
+          <div class="foot">VH Launcher v1.0.0 · MCD2 Việt hoá</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-font">
+      <div class="fontwrap">
+        <h2>Cài Font Tuỳ Chỉnh</h2>
+        <div class="lead">Thay font mặc định của bản Việt hoá bằng font bạn thích (TTF / OTF).</div>
+        <div class="fontgroup">
+          <label>Font hiện tại</label>
+          <div class="fontrow"><b id="currentFont">JBM mặc định (bản Việt hoá)</b>
+            <button class="btn" id="restoreFont">↺ Dùng font JBM mặc định</button></div>
+        </div>
+        <div class="fontgroup">
+          <label>File Font mới (TTF / OTF)</label>
+          <div class="row"><input type="text" id="fontPath" placeholder="Chưa chọn file">
+            <button class="btn" id="browseFont">Duyệt...</button></div>
+        </div>
+        <div class="fontgroup">
+          <label>Tên font đang sài</label>
+          <div class="row"><input type="text" id="fontName" placeholder="Chọn font để tự điền...">
+            <span class="chip">_99_P.pak</span></div>
+          <div class="hint">Gói font sẽ nằm trong ~mods\&lt;Tên&gt;_99\</div>
+        </div>
+        <button class="bigbtn" id="installFont">→ Cài font này</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-graphics">
+      <div class="fontwrap">
+        <h2>Đồ hoạ</h2>
+        <div class="lead">Chỉnh chất lượng game trực tiếp từ launcher — không cần vào trong game.</div>
+        <div class="warn" id="gameWarn" style="display:none">⚠ Game đang chạy. Vui lòng THOÁT game rồi vào lại để áp dụng các thay đổi đồ hoạ.</div>
+        <div class="grid2">
+          <div><label>Chất lượng tổng thể</label><select id="gPreset">
+            <option value="custom">Tuỳ chỉnh</option>
+            <option value="0">Thấp</option><option value="1">Trung bình</option>
+            <option value="2">Cao</option><option value="3">Rất cao</option><option value="4">Tối đa</option>
+          </select></div>
+          <div><label>Độ phân giải</label><select id="gRes">
+            <option>1280x720</option><option>1600x900</option><option>1920x1080</option>
+            <option>2560x1440</option><option>3840x2160</option>
+          </select></div>
+          <div><label>Chế độ cửa sổ</label><select id="gMode">
+            <option value="0">Toàn màn hình</option><option value="1">Không viền</option><option value="2">Cửa sổ</option>
+          </select></div>
+          <div><label>VSync</label><select id="gVSync">
+            <option value="False">Tắt</option><option value="True">Bật</option>
+          </select></div>
+          <div><label>Giới hạn FPS (0 = không giới hạn)</label><select id="gFps">
+            <option value="0">Không giới hạn</option><option value="30">30</option>
+            <option value="60">60</option><option value="120">120</option><option value="144">144</option>
+          </select></div>
+          <div><label>Tỷ lệ render (%)</label><select id="gResScale">
+            <option>50</option><option>70</option><option>85</option><option>100</option>
+          </select></div>
+          <div><label>Tầm nhìn</label><select class="sg" data-key="sg.ViewDistanceQuality"></select></div>
+          <div><label>Bóng đổ</label><select class="sg" data-key="sg.ShadowQuality"></select></div>
+          <div><label>Chất liệu</label><select class="sg" data-key="sg.TextureQuality"></select></div>
+          <div><label>Hiệu ứng</label><select class="sg" data-key="sg.EffectsQuality"></select></div>
+          <div><label>Hậu xử lý</label><select class="sg" data-key="sg.PostProcessQuality"></select></div>
+          <div><label>Chống răng cưa</label><select class="sg" data-key="sg.AntiAliasingQuality"></select></div>
+        </div>
+        <button class="bigbtn" id="applyGraphics">→ Áp dụng đồ hoạ</button>
+      </div>
+    </section>
+
+    <section class="view" id="view-about">
+      <div class="fontwrap">
+        <h2>Thông tin</h2>
+        <div class="lead" style="line-height:1.8">
+          Launcher đóng gói một file exe duy nhất (WebView2).<br><br>
+          1. Chọn đường dẫn game → Cài Việt hoá.<br>
+          2. Vào game → Cài đặt → Ngôn ngữ văn bản → Tiếng Việt.<br>
+          3. Tab Font tuỳ chỉnh để đổi font TTF/OTF.<br>
+          4. Lần đầu mở game có thể mất 2-3 phút để nạp shader.
+        </div>
+        <div class="card" style="margin-top:24px">
+          <h3>Credit</h3>
+          <div style="color:#c9d1ea;font-size:14px;line-height:1.8">
+            Made by <b style="color:#a794ff">HuyNhatTran</b> via Discord &lt;3
+          </div>
+        </div>
+        <div class="card" style="margin-top:24px">
+          <h3>Ủng hộ</h3>
+          <div style="color:#c9d1ea;font-size:14px;line-height:1.8;margin-bottom:16px">
+            Nếu bạn thích bản Việt hoá của mình, bạn có thể ủng hộ mình qua QR này.<br>Cảm ơn &lt;3
+          </div>
+          <div class="donate" id="donateBox">
+            <img src="assets/donate.png" alt="QR donate">
+            <div class="donateCover" id="donateCover">
+              <b>Nhấn để xem QR ủng hộ</b>
+              <small>Nội dung nhạy cảm với ví tiền</small>
+            </div>
+          </div>
+          <button class="btn" id="hideDonate" style="display:none;margin-top:12px">Ẩn lại</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="welcome">
+  <div class="modal">
+    <div class="step" id="stepNum">1/8</div>
+    <h2>Chào mừng đến với launcher</h2>
+    <p id="stepText"></p>
+    <div class="bars" id="bars"></div>
+    <div class="actions"><button class="link" id="skipWelcome">Bỏ qua</button>
+      <button class="btn primary" id="nextWelcome">Tiếp theo</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const steps = [
+    "Mất khoảng một phút để làm quen với những thao tác chính. Hướng dẫn này không thể cài đặt hay thay đổi thiết lập của bạn.",
+    "Chọn đường dẫn game bằng nút Duyệt... rồi bấm Áp dụng để launcher biết nơi cần cài mod.",
+    "Bấm Cài Việt hoá để chép gói ngôn ngữ vào thư mục ~mods của game.",
+    "Mở game vào Cài đặt → Ngôn ngữ văn bản → chọn Tiếng Việt.",
+    "Tab Font tuỳ chỉnh cho phép bạn dùng file TTF/OTF bất kỳ thay cho font mặc định.",
+    "Nút Dùng font JBM mặc định sẽ gỡ gói font tuỳ chỉnh, quay lại font của bản Việt hoá.",
+    "Lần đầu khởi động game có thể chậm vì đang nạp shader — cứ đợi đến khi hiện cửa sổ.",
+    "Sẵn sàng! Bấm Play Now để bắt đầu. Chúc bạn chơi vui."
+  ];
+  let step = 0;
+  function renderStep(){
+    $('stepNum').textContent = (step+1)+'/8';
+    $('stepText').textContent = steps[step];
+    $('bars').innerHTML = steps.map((_,i)=>'<i class="'+(i<=step?'on':'')+'"></i>').join('');
+  }
+  renderStep();
+  $('nextWelcome').onclick = () => {
+    step++;
+    if(step>=8){ $('welcome').classList.remove('show'); pywebview.api.set_guide_seen(); }
+    else renderStep();
+  };
+  $('skipWelcome').onclick = () => { $('welcome').classList.remove('show'); pywebview.api.set_guide_seen(); };
+  async function initGuide(){
+    if(!window.pywebview) return setTimeout(initGuide,200);
+    const seen = await pywebview.api.guide_seen();
+    if(!seen) $('welcome').classList.add('show');
+  }
+  initGuide();
+
+  function toast(msg){
+    const t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),4200);
+  }
+  function log(msg){ const l=$('log'); l.textContent += '\n'+msg; l.scrollTop=l.scrollHeight; }
+
+  document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    $('view-'+b.dataset.tab).classList.add('active');
+  });
+
+  let state = {};
+  async function refresh(){
+    if(!window.pywebview) return setTimeout(refresh,200);
+    state = await pywebview.api.state();
+    $('gamePath').value = state.game_path || '';
+    $('chipGame').textContent = 'Game: ' + (state.game_found ? 'OK' : 'Không thấy');
+    $('chipGame').className = 'chip ' + (state.game_found ? 'ok' : 'bad');
+    $('chipMod').textContent = 'Mod: ' + (state.mod_installed ? 'Đã cài' : 'Chưa cài');
+    $('chipMod').className = 'chip ' + (state.mod_installed ? 'ok' : 'bad');
+    $('chipFont').textContent = 'Font: ' + (state.font_name || 'gốc');
+    $('currentFont').textContent = state.font_name || 'JBM mặc định (bản Việt hoá)';
+    if(state.font_name && !$('fontName').value) $('fontName').value = state.font_name;
+    $('sideStatus').textContent = state.mod_installed ? 'Đã Việt hoá' : 'Chưa Việt hoá';
+    $('miniMod').textContent = state.mod_installed ? 'Đã cài' : 'Chưa cài';
+    $('miniFont').textContent = state.font_name || 'Gốc';
+  }
+  window.addEventListener('pywebviewready', refresh);
+
+  $('browseGame').onclick = async () => {
+    const p = await pywebview.api.pick_game();
+    if(p){ $('gamePath').value=p; await pywebview.api.set_game_path(p); await refresh(); }
+  };
+  $('applyPath').onclick = async () => {
+    const r = await pywebview.api.set_game_path($('gamePath').value);
+    toast(r.msg); await refresh();
+  };
+  $('gameFiles').onclick = () => pywebview.api.open_game_folder().then(r=>toast(r.msg));
+  $('help').onclick = () => { step=0; renderStep(); $('welcome').classList.add('show'); };
+  $('installMod').onclick = async () => { const r=await pywebview.api.install_mod(); toast(r.msg); log(r.msg); await refresh(); };
+  $('removeMod').onclick = async () => { const r=await pywebview.api.uninstall_mod(); toast(r.msg); log(r.msg); await refresh(); };
+  $('playBtn').onclick = async () => { const r=await pywebview.api.play(); toast(r.msg); log(r.msg); };
+  $('browseFont').onclick = async () => {
+    const p = await pywebview.api.pick_font();
+    if(p){
+      $('fontPath').value = p;
+      $('fontName').value = p.split(/[\\/]/).pop().replace(/\.[^.]+$/,'').replace(/\s+/g,'_');
+    }
+  };
+  $('installFont').onclick = async () => {
+    const r = await pywebview.api.install_font($('fontPath').value, $('fontName').value);
+    toast(r.msg); log(r.msg); await refresh();
+  };
+  $('restoreFont').onclick = async () => {
+    const r = await pywebview.api.restore_font();
+    $('fontPath').value = 'Chưa chọn file';
+    $('fontName').value = '';
+    $('currentFont').textContent = 'JBM mặc định (bản Việt hoá)';
+    toast(r.msg); log(r.msg); await refresh();
+  };
+
+  // ---------- đồ hoạ ----------
+  const sgLabels = ['Thấp','Trung bình','Cao','Rất cao','Tối đa'];
+  const sgSelects = [...document.querySelectorAll('select.sg')];
+  sgSelects.forEach(s => { s.innerHTML = sgLabels.map((t,i)=>'<option value="'+i+'">'+t+'</option>').join(''); });
+  async function loadGraphics(){
+    if(!window.pywebview) return;
+    const r = await pywebview.api.get_graphics();
+    if(!r.ok){ toast(r.msg); return; }
+    const v = r.values;
+    $('gameWarn').style.display = r.running ? 'block' : 'none';
+    const res = (v.ResolutionSizeX||'1280')+'x'+(v.ResolutionSizeY||'720');
+    if([...$('gRes').options].some(o=>o.value===res)) $('gRes').value=res;
+    $('gMode').value = v.FullscreenMode || '0';
+    $('gVSync').value = (v.bUseVSync||'False')==='True' ? 'True':'False';
+    const fps = Math.round(Number(v.FrameRateLimit||0));
+    $('gFps').value = ['0','30','60','120','144'].includes(String(fps)) ? String(fps) : '0';
+    if([...$('gResScale').options].some(o=>o.value===v.sg.ResolutionQuality)) $('gResScale').value=v.sg.ResolutionQuality;
+    sgSelects.forEach(s => { const val=v[s.dataset.key]; if(val!==undefined) s.value=val; });
+  }
+  document.querySelectorAll('.nav button').forEach(b=>{
+    if(b.dataset.tab==='graphics') b.addEventListener('click', ()=>setTimeout(loadGraphics,60));
+  });
+  $('gPreset').onchange = e => {
+    if(e.target.value==='custom') return;
+    sgSelects.forEach(s => s.value = e.target.value);
+  };
+  sgSelects.forEach(s => s.addEventListener('change', ()=>{ $('gPreset').value='custom'; }));
+  $('applyGraphics').onclick = async () => {
+    const vals = { ResolutionSizeX:$('gRes').value.split('x')[0],
+                   ResolutionSizeY:$('gRes').value.split('x')[1],
+                   FullscreenMode:$('gMode').value, bUseVSync:$('gVSync').value,
+                   FrameRateLimit:Number($('gFps').value).toFixed(6),
+                   'sg.ResolutionQuality':$('gResScale').value };
+    sgSelects.forEach(s => vals[s.dataset.key]=s.value);
+    const r = await pywebview.api.set_graphics(vals);
+    toast(r.msg); log(r.msg);
+    if(r.running) $('gameWarn').style.display='block';
+  };
+  $('donateCover').onclick = () => {
+    $('donateBox').classList.add('revealed');
+    $('hideDonate').style.display = 'inline-block';
+  };
+  $('hideDonate').onclick = () => {
+    $('donateBox').classList.remove('revealed');
+    $('hideDonate').style.display = 'none';
+  };
+
+  const vid = $('bg');
+  let savedAudio = { volume: 10, muted: false };
+  vid.addEventListener('loadedmetadata', () => {
+    if (isFinite(vid.duration)) vid.currentTime = vid.duration * 0.1;
+    vid.volume = savedAudio.volume / 100;
+  });
+  vid.addEventListener('error', () => log('Không tải được video nền.'));
+  function applyVolumeUI(){
+    $('vol').value = savedAudio.volume;
+    $('volVal').textContent = savedAudio.volume;
+    vid.volume = savedAudio.volume / 100;
+    $('muteBtn').textContent = vid.muted ? '🔇' : '🔊';
+  }
+  async function initAudio(){
+    if(!window.pywebview) return setTimeout(initAudio, 200);
+    savedAudio = await pywebview.api.get_audio();
+    applyVolumeUI();
+  }
+  initAudio();
+  $('vol').oninput = e => {
+    const v = Number(e.target.value);
+    savedAudio.volume = v;
+    vid.volume = v / 100;
+    vid.muted = v === 0;
+    $('volVal').textContent = e.target.value;
+    $('muteBtn').textContent = vid.muted ? '🔇' : '🔊';
+    pywebview.api.set_audio(v, vid.muted);
+  };
+  $('muteBtn').onclick = () => {
+    vid.muted = !vid.muted;
+    $('muteBtn').textContent = vid.muted ? '🔇' : '🔊';
+    pywebview.api.set_audio(savedAudio.volume, vid.muted);
+  };
+  // Chromium chỉ cho autoplay khi đang mute -> bật tiếng sau thao tác đầu tiên.
+  let soundActivated = false;
+  function activateSound(){
+    if(soundActivated) return;
+    soundActivated = true;
+    vid.muted = false;
+    vid.volume = savedAudio.volume / 100;
+    $('muteBtn').textContent = '🔊';
+  }
+  document.addEventListener('pointerdown', activateSound, { once: true });
+</script>
+</body>
+</html>
