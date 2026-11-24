@@ -1,5 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![VirusTotal](https://shields.io)](https://www.virustotal.com/gui/file/35f576b23fb2d53199602a65115165527130665abf5bb8a95331e410098a103b?nocache=1)
+[![VirusTotal](https://img.shields.io/badge/VirusTotal-checked-blue)](https://www.virustotal.com/gui/file/35f576b23fb2d53199602a65115165527130665abf5bb8a95331e410098a103b?nocache=1)
 
 # Minecraft Dungeons II — Bản Việt hoá cộng đồng
 
@@ -9,7 +9,17 @@ Bản dịch tiếng Việt cho **Minecraft Dungeons II (PC, bản 1.1.3.0)**, k
 
 ## Tải về & cài đặt nhanh
 
-Repo này **không chứa sẵn file mod hay file exe** (xem [Các file không nằm trong repo](#các-file-không-nằm-trong-repo)). Tải bản phát hành mới nhất trong tab **Releases** của repo này.
+Repo này **không chứa sẵn file mod hay file exe** (xem [Các file không nằm trong repo](#các-file-không-nằm-trong-repo)). **Tải tại đây → [Release](https://github.com/HuyNhatTraan/minecraft-dungeon-ii-viet-hoa/releases)**.
+
+### Ảnh chụp giao diện
+
+| Trang chủ | Font tuỳ chỉnh |
+| :---: | :---: |
+| ![Trang chủ launcher](screenshots/Screenshot%202026-11-24%20202605.png) | ![Tab Font tuỳ chỉnh](screenshots/Screenshot%202026-11-24%20202623.png) |
+
+| Đồ hoạ | Thông tin |
+| :---: | :---: |
+| ![Tab Đồ hoạ](screenshots/Screenshot%202026-11-24%20202629.png) | ![Tab Thông tin](screenshots/Screenshot%202026-11-24%20202635.png) |
 
 ## Launcher
 
